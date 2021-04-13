@@ -25,7 +25,14 @@ const setSchedule = async (data) =>
     },
   });
 
-const ModalTimeBlock = ({ isOpen, onClose, onComplete, children, errors }) => (
+const ModalTimeBlock = ({
+  isOpen,
+  onClose,
+  onComplete,
+  children,
+  errors,
+  isSubmitting,
+}) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
     <ModalContent>
@@ -33,10 +40,17 @@ const ModalTimeBlock = ({ isOpen, onClose, onComplete, children, errors }) => (
       <ModalCloseButton />
       <ModalBody>{children}</ModalBody>
       <ModalFooter>
-        <Button variant='ghost' onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button colorScheme='blue' mr={3} onClick={onComplete}>
+        {!isSubmitting && (
+          <Button variant='ghost' onClick={onClose}>
+            Cancelar
+          </Button>
+        )}
+        <Button
+          colorScheme='blue'
+          mr={3}
+          onClick={onComplete}
+          isLoading={isSubmitting}
+        >
           Reservar horário
         </Button>
       </ModalFooter>
@@ -55,9 +69,17 @@ export const TimeBlock = ({ time }) => {
     errors,
     handleBlur,
     touched,
+    isSubmitting,
   } = useFormik({
     // eslint-disable-next-line no-shadow
-    onSubmit: (values) => setSchedule({ ...values, when: time }),
+    onSubmit: async (values) => {
+      try {
+        await setSchedule({ ...values, when: time });
+        toggle();
+      } catch (error) {
+        console.log(error);
+      }
+    },
     initialValues: {
       name: '',
       phone: '',
@@ -76,6 +98,7 @@ export const TimeBlock = ({ time }) => {
         isOpen={isOpen}
         onClose={toggle}
         onComplete={handleSubmit}
+        isSubmitting={isSubmitting}
       >
         <>
           <Input
@@ -88,6 +111,7 @@ export const TimeBlock = ({ time }) => {
             onChange={handleChange}
             onBlur={handleBlur}
             size='lg'
+            disabled={isSubmitting}
           />
           <Input
             label='Telefone'
@@ -99,6 +123,7 @@ export const TimeBlock = ({ time }) => {
             placeholder='(99) 9 9999-9999'
             size='lg'
             mt={4}
+            disabled={isSubmitting}
           />
         </>
       </ModalTimeBlock>
