@@ -21,11 +21,11 @@ module.exports = {
     "plugin:import/warnings",
     "plugin:import/typescript",
     "prettier",
-    
-    
+
+
   ],
   rules: {
-    "react/jsx-filename-extension": [1, { extensions: [".js",".jsx"] }],
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "import/extensions": "off",
     "react/prop-types": "off",
     "jsx-a11y/anchor-is-valid": "off",
@@ -35,7 +35,7 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "import/no-cycle": [0, { ignoreExternal: true }],
     "prefer-const": "off",
-    "import/prefer-default-export":"off",
+    "import/prefer-default-export": "off",
     // needed because of https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-use-before-define.md#how-to-use & https://stackoverflow.com/questions/63818415/react-was-used-before-it-was-defined
     "no-use-before-define": "off",
     "no-unused-vars": "off",
@@ -51,10 +51,11 @@ module.exports = {
       "files": ["*.ts", "*.tsx"],
       "rules": {
         "@typescript-eslint/explicit-module-boundary-types": ["error"]
-      
-      }}],
 
-    settings: {
+      }
+    }],
+
+  settings: {
     "import/resolver": {
       "babel-module": {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
@@ -65,4 +66,4 @@ module.exports = {
       },
     },
   },
-  };
+};

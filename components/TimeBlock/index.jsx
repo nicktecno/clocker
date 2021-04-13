@@ -8,24 +8,35 @@ import {
   ModalCloseButton,
   Modal,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import * as yup from 'yup';
 
 import { Input } from '../Input';
 
+const setSchedule = async (data) =>
+  axios({
+    method: 'post',
+    url: '/api/schedule',
+    data: {
+      ...data,
+      username: window.location.pathname.replace('/', ''),
+    },
+  });
+
 const ModalTimeBlock = ({ isOpen, onClose, onComplete, children, errors }) => (
   <Modal isOpen={isOpen} onClose={onClose}>
     <ModalOverlay />
     <ModalContent>
-      <ModalHeader>Modal Title</ModalHeader>
+      <ModalHeader>Faça sua reserva</ModalHeader>
       <ModalCloseButton />
       <ModalBody>{children}</ModalBody>
       <ModalFooter>
         <Button variant='ghost' onClick={onClose}>
           Cancelar
         </Button>
-        <Button colorSchema='blue' mr={3} onClick={onComplete}>
+        <Button colorScheme='blue' mr={3} onClick={onComplete}>
           Reservar horário
         </Button>
       </ModalFooter>
@@ -45,10 +56,11 @@ export const TimeBlock = ({ time }) => {
     handleBlur,
     touched,
   } = useFormik({
-    onSubmit: () => {},
+    // eslint-disable-next-line no-shadow
+    onSubmit: (values) => setSchedule({ ...values, when: time }),
     initialValues: {
       name: '',
-      email: '',
+      phone: '',
     },
     validationSchema: yup.object().shape({
       name: yup.string().required('Preenchimento obrigatório'),
@@ -60,7 +72,11 @@ export const TimeBlock = ({ time }) => {
     <Button p={8} bg='blue.500' color='white' onClick={toggle}>
       {time}
 
-      <ModalTimeBlock isOpen={isOpen} onClose={toggle}>
+      <ModalTimeBlock
+        isOpen={isOpen}
+        onClose={toggle}
+        onComplete={handleSubmit}
+      >
         <>
           <Input
             label='Nome:'
@@ -76,6 +92,7 @@ export const TimeBlock = ({ time }) => {
           <Input
             label='Telefone'
             name='phone'
+            error={errors.phone}
             value={values.phone}
             onChange={handleChange}
             onBlur={handleBlur}

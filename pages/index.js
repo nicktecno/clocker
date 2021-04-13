@@ -12,7 +12,7 @@ export default function Home() {
     if (!auth.loading) {
       auth.user ? router.push('/agenda') : router.push('/login');
     }
-  }, [auth.user, router, auth.loading]);
+  }, [auth.user, router, auth.loading])
 
   return (
     <Container p={4} centerContent>
