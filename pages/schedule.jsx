@@ -13,15 +13,17 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useFetch } from '@refetty/react';
-import { addDays, subDays } from 'date-fns';
-import { useFormik, yupToFormErrors } from 'formik';
+import { addDays, subDays, format } from 'date-fns';
 import { Logo, useAuth, formatDate, TimeBlock } from '../components';
 
-const getSchedule = async ({ when }) =>
+const getSchedule = async (when) =>
   axios({
     method: 'get',
     url: '/api/schedule',
-    params: { when, username: window.location.pathname },
+    params: {
+      username: window.location.pathname.replace('/', ''),
+      date: format(when, 'yyyy-MM-dd'),
+    },
   });
 
 const Header = ({ children }) => (
@@ -77,8 +79,8 @@ export default function Schedule() {
             size='xl'
           />
         )}
-        {data?.map((time) => (
-          <TimeBlock key={time} time={time} date={when} />
+        {data?.map(({ time, isBlocked }) => (
+          <TimeBlock key={time} time={time} date={when} disabled={isBlocked} />
         ))}
       </SimpleGrid>
     </Container>
