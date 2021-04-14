@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-plusplus */
 import { differenceInHours, format, addHours } from 'date-fns';
 import { firebaseServer } from '../../config/firebase/server';
@@ -19,6 +20,11 @@ for (let blockIndex = 0; blockIndex <= totalHours; blockIndex++) {
 
 const getUserId = async (username) => {
   const profileDoc = await profile.where('username', '==', username).get();
+
+  if (!profileDoc.docs.length) {
+    return false;
+  }
+
   const { userId } = profileDoc.docs[0].data();
 
   return userId;
@@ -26,11 +32,12 @@ const getUserId = async (username) => {
 
 const setSchedule = async (req, res) => {
   const userId = await getUserId(req.body.username.replace('/', ''));
-  const docId = `${userId}#${req.body.date}#${req.body.time}`
+  const docId = `${userId}#${req.body.date}#${req.body.time}`;
   const doc = await agenda.doc(docId).get();
 
   if (doc.exists) {
-    return res.status(400).json({ message: 'Time blocked' });
+    res.status(400).json({ message: 'Time blocked' });
+    return;
   }
 
   const block = await agenda.doc(docId).set({
@@ -46,22 +53,25 @@ const setSchedule = async (req, res) => {
 
 const getSchedule = async (req, res) => {
   try {
-    const userId = await getUserId(req.query.username)
+    const userId = await getUserId(req.query.username);
+
+    if (!userId) {
+      return res.status(404).json({ message: 'Invalid username' });
+    }
 
     const snapshot = await agenda
       .where('userId', '==', userId)
       .where('date', '==', req.query.date)
       .get();
 
+    // pegar dados do Firebase
+    const docs = snapshot.docs.map((doc) => doc.data());
 
-    //pegar dados do Firebase
-    const docs = snapshot.docs.map(doc => doc.data())
-
-    const result = timeBlocksList.map(time => ({
+    const result = timeBlocksList.map((time) => ({
       time,
-      isBlocked: !!docs.find(doc => doc.time === time)
-    }))
-    //!! igual a fazer Boolean(docs.find)
+      isBlocked: !!docs.find((doc) => doc.time === time),
+    }));
+    //! ! igual a fazer Boolean(docs.find)
 
     return res.status(200).json(result);
   } catch (error) {
@@ -77,5 +87,3 @@ const methods = {
 
 export default async (req, res) =>
   methods[req.method] ? methods[req.method](req, res) : res.status(405);
-
-// return

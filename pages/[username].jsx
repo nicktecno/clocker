@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-expressions */
 import {
-  Button,
   Container,
   Box,
   IconButton,
@@ -14,14 +13,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useFetch } from '@refetty/react';
 import { addDays, subDays, format } from 'date-fns';
-import { Logo, useAuth, formatDate, TimeBlock } from '../components';
+import { Logo, formatDate, TimeBlock } from '../components';
 
-const getSchedule = async (when) =>
+const getSchedule = async ({ when, username }) =>
   axios({
     method: 'get',
     url: '/api/schedule',
     params: {
-      username: window.location.pathname.replace('/', ''),
+      username,
       date: format(when, 'yyyy-MM-dd'),
     },
   });
@@ -33,10 +32,9 @@ const Header = ({ children }) => (
 );
 
 export default function Schedule() {
-  const [auth, { logout }] = useAuth();
   const router = useRouter();
   const [when, setWhen] = useState(() => new Date());
-  const [data, { loading, status, error }, fetch] = useFetch(getSchedule, {
+  const [data, { loading }, fetch] = useFetch(getSchedule, {
     lazy: true,
   });
 
@@ -44,15 +42,20 @@ export default function Schedule() {
   const addDay = () => setWhen((prevstate) => addDays(prevstate, 1));
   const removeDay = () => setWhen((prevstate) => subDays(prevstate, 1));
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const refresh = () => {
+    fetch({ when, username: router.query.username });
+  };
+
   useEffect(() => {
-    fetch(when);
-  }, [fetch, when]);
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [when, router.query.username]);
 
   return (
     <Container>
       <Header>
         <Logo size={175} />
-        <Button onClick={logout}>Sair</Button>
       </Header>
       <Box mt={8} display='flex' alignItems='center'>
         <IconButton
@@ -80,7 +83,13 @@ export default function Schedule() {
           />
         )}
         {data?.map(({ time, isBlocked }) => (
-          <TimeBlock key={time} time={time} date={when} disabled={isBlocked} />
+          <TimeBlock
+            key={time}
+            time={time}
+            date={when}
+            disabled={isBlocked}
+            onSuccess={refresh}
+          />
         ))}
       </SimpleGrid>
     </Container>

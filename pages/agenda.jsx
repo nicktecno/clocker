@@ -1,22 +1,29 @@
 /* eslint-disable no-unused-expressions */
-import { Button, Container, Box, IconButton } from '@chakra-ui/react';
+import {
+  Button,
+  Container,
+  Box,
+  IconButton,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useFetch } from '@refetty/react';
-import { addDays, subDays } from 'date-fns';
+import { addDays, subDays, format } from 'date-fns';
 import { Logo, useAuth, formatDate } from '../components';
 import { getToken } from '../config/firebase/client';
 
-const getAgenda = async ({ when }) => {
+const getAgenda = async (when) => {
   const token = await getToken();
 
   return axios({
     method: 'get',
     url: '/api/agenda',
-    params: { when },
+    params: { date: format(when, 'yyyy-MM-dd') },
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -29,11 +36,28 @@ const Header = ({ children }) => (
   </Box>
 );
 
+const AgendaBlock = ({ time, name, phone, ...props }) => (
+  <Box
+    {...props}
+    display='flex'
+    bg='gray.100'
+    borderRadius={8}
+    p={4}
+    alignItems='center'
+  >
+    <Box flex={1}>{time}</Box>
+    <Box textAlign='right'>
+      <Text fontSize='2xl'>{name}</Text>
+      <Text>{phone}</Text>
+    </Box>
+  </Box>
+);
+
 export default function Agenda() {
-  const [auth, { logout }] = useAuth();
   const router = useRouter();
+  const [auth, { logout }] = useAuth();
   const [when, setWhen] = useState(() => new Date());
-  const [data, { loading, status, error }, fetch] = useFetch(getAgenda, {
+  const [data, { loading }, fetch] = useFetch(getAgenda, {
     lazy: true,
   });
 
@@ -70,6 +94,26 @@ export default function Agenda() {
           onClick={addDay}
         />
       </Box>
+
+      {loading && (
+        <Spinner
+          tickness='4px'
+          speed='0.65s'
+          emptyColor='gray.200'
+          color='blue.500'
+          size='xl'
+        />
+      )}
+
+      {data?.map((doc) => (
+        <AgendaBlock
+          key={doc.time}
+          time={doc.time}
+          name={doc.name}
+          phone={doc.phone}
+          mt={4}
+        />
+      ))}
     </Container>
   );
 }

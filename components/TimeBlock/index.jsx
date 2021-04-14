@@ -60,7 +60,7 @@ const ModalTimeBlock = ({
   </Modal>
 );
 
-export const TimeBlock = ({ time, date, disabled }) => {
+export const TimeBlock = ({ time, date, disabled, onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen((prevState) => !prevState);
 
@@ -78,13 +78,14 @@ export const TimeBlock = ({ time, date, disabled }) => {
       try {
         await setSchedule({ ...values, time, date });
         toggle();
+        onSuccess();
       } catch (error) {
         console.log(error);
       }
     },
     initialValues: {
       name: '',
-      phone: '',
+      email: '',
     },
     validationSchema: yup.object().shape({
       name: yup.string().required('Preenchimento obrigatório'),
@@ -125,6 +126,7 @@ export const TimeBlock = ({ time, date, disabled }) => {
             <Input
               label='Telefone'
               name='phone'
+              mask={['(99) 9999-9999', '(99) 9 9999-9999']}
               error={errors.phone}
               value={values.phone}
               onChange={handleChange}
